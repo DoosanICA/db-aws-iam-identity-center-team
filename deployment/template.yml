@@ -64,7 +64,7 @@ Resources:
     Type: "AWS::Amplify::App"
     Properties:
       Name: TEAM-IDC-APP
-      Repository: !Sub https://git-codecommit.${AWS::Region}.amazonaws.com/v1/repos/team-idc-app
+      Repository: https://github.com/DoosanICA/db-aws-iam-identity-center-team
       Description: Temporary Elevated Access Management Application
       CustomRules:
         - Source: /<*>
@@ -94,7 +94,7 @@ Resources:
                 - '# Execute Amplify CLI with the helper script'
                 - update-alternatives --install /usr/bin/python3 python3 /usr/local/bin/python3.9 11
                 - /usr/local/bin/pip3.9 install --user pipenv==2023.6.12
-                - amplify init --yes --amplify "{\"projectName\":\"TEAM-IDC-APP\",\"envName\":\"main\",\"defaultEditor\":\"code\"}"
+                - amplify init --yes --amplify "{\"appId\":\"$AWS_APP_ID\",\"envName\":\"main\"}"
                 - amplify publish --yes --allow-destructive-graphql-schema-update
         frontend:
           phases:

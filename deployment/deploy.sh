@@ -25,16 +25,17 @@ fi
 
 cd ..
 
-aws codecommit create-repository --region $REGION --repository-name team-idc-app --repository-description "Temporary Elevated Access Management (TEAM) Application"
-git remote remove origin
-git remote add origin codecommit::$REGION://team-idc-app
-git push origin main
+# aws codecommit create-repository --region $REGION --repository-name team-idc-app --repository-description "Temporary Elevated Access Management (TEAM) Application"
+# git remote remove origin
+# git remote add origin codecommit::$REGION://team-idc-app
+# git push origin main
 
 cd ./deployment
 if [[ ! -z "$TAGS" ]]; then
   if [[ ! -z "$UI_DOMAIN" ]]; then
     aws cloudformation deploy --region $REGION --template-file template.yml \
       --stack-name TEAM-IDC-APP \
+      --role-arn arn:aws:iam::$TEAM_ACCOUNT:role/CloudFormationDeployer \
       --parameter-overrides \
         Login=$IDC_LOGIN_URL \
         CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
@@ -48,6 +49,7 @@ if [[ ! -z "$TAGS" ]]; then
   else
     aws cloudformation deploy --region $REGION --template-file template.yml \
       --stack-name TEAM-IDC-APP \
+      --role-arn arn:aws:iam::$TEAM_ACCOUNT:role/CloudFormationDeployer \
       --parameter-overrides \
         Login=$IDC_LOGIN_URL \
         CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
@@ -62,6 +64,7 @@ else
   if [[ ! -z "$UI_DOMAIN" ]]; then
     aws cloudformation deploy --region $REGION --template-file template.yml \
       --stack-name TEAM-IDC-APP \
+      --role-arn arn:aws:iam::$TEAM_ACCOUNT:role/CloudFormationDeployer \
       --parameter-overrides \
         Login=$IDC_LOGIN_URL \
         CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
@@ -74,6 +77,7 @@ else
   else
     aws cloudformation deploy --region $REGION --template-file template.yml \
       --stack-name TEAM-IDC-APP \
+      --role-arn arn:aws:iam::$TEAM_ACCOUNT:role/CloudFormationDeployer \
       --parameter-overrides \
         Login=$IDC_LOGIN_URL \
         CloudTrailAuditLogs=$CLOUDTRAIL_AUDIT_LOGS \
