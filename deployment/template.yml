@@ -38,6 +38,23 @@ Resources:
       branchName: main
       branch: !GetAtt AmplifyBranch.Arn
 
+  DeployRole:
+    Type: AWS::IAM::ManagedPolicy
+    Properties: 
+      Description: Deploy resources onwed for Amplify
+      ManagedPolicyName: Amplify-Deploy
+      Path: /sso/teams/
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: PassCloudFormationRole
+            Effect: Allow
+            Action:
+              - iam:PassRole
+              - iam:GetRole
+            Resource:
+              - !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudFormationDeployer
+
   AmplifyRole:
     Type: AWS::IAM::Role
     Metadata:
@@ -59,6 +76,7 @@ Resources:
       RoleName: AmplifyDeployerRole
       ManagedPolicyArns:
         - "arn:aws:iam::aws:policy/AdministratorAccess" 
+        - !Ref DeployRole
 
   AmplifyApp:
     Type: "AWS::Amplify::App"
