@@ -23,7 +23,7 @@ const Hierarchy = ({ options, resource, onSelect, handleToggle, action, allItems
       <ul>
         {options.map(option => (
           <li key={option.Id}>
-            {(option.Children && option.Children.length === 0) ? (
+            {(!option.Children || option.Children.length === 0) ? (
               <li>
                 <Checkbox
                   onChange={({ detail }) => {
