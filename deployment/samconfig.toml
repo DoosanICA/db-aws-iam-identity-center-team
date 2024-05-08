@@ -18,7 +18,7 @@ role_arn="arn:aws:iam::196522590087:role/CloudFormationDeployer"
 on_failure = "DELETE"
 
 [github.global.parameters]
-stack_name =  "db-aws-teamroles-di-operations"
+stack_name =  "TEAM-IDC-APP"
 s3_prefix = "db-aws-teamroles"
 tags = "doosan:repo=\"https://github.com/DoosanICA/db-aws-teamroles\" doosan:owner=\"DI_OPERATIONS\""
 output_template_file="template-packaged.yaml"
