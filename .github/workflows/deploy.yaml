@@ -48,4 +48,4 @@ jobs:
           module: deployment
           environment: security
           parameterOverrides: |
-            AccessToken=${{ secrets.ACCESS_TOKEN }} LOGIN=${{ vars.IDC_LOGIN_URL }} CloudTrailAuditLogs=${{ secrets.CLOUD_TRAIL_AUDIT_LOGS }} CustomAmplifyDomain=${{ secrets.CUSTOM_AMPLIFY_DOMAIN }} CloudTrailAuditLogs=${{ vars.CLOUDTRAIL_AUDIT_LOGS }} TeamAdminGroup=${{ vars.TEAM_ADMIN_GROUP }} TeamAuditGroup=${{ vars.TEAM_AUDITOR_GROUP }} CustomAmplifyDomain=${{ vars.UI_DOMAIN }}
+            AccessToken=${{ secrets.AWS_AMPLIFY_ACCESS_TOKEN }} LOGIN=${{ vars.IDC_LOGIN_URL }} CloudTrailAuditLogs=${{ secrets.CLOUD_TRAIL_AUDIT_LOGS }} CustomAmplifyDomain=${{ secrets.CUSTOM_AMPLIFY_DOMAIN }} CloudTrailAuditLogs=${{ vars.CLOUDTRAIL_AUDIT_LOGS }} TeamAdminGroup=${{ vars.TEAM_ADMIN_GROUP }} TeamAuditGroup=${{ vars.TEAM_AUDITOR_GROUP }} CustomAmplifyDomain=${{ vars.UI_DOMAIN }}
