@@ -23,7 +23,7 @@ permissions:
 jobs:
   deploy:
     if: github.event_name == 'workflow_dispatch'
-    runs-on: [self-hosted,linux,x64,digital,di_operations]
+    runs-on: [ubuntu-latest]
     environment: dev
     steps:
       - name: Set Branch
