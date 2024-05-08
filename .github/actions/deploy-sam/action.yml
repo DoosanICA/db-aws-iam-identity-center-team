@@ -14,6 +14,11 @@ inputs:
     description: Parameter overrides
     type: string
     required: false
+  capabilities:
+    description: Capabilities
+    type: string
+    required: false
+    default: CAPABILITY_IAM
 
 runs:
   using: composite
@@ -34,3 +39,4 @@ runs:
           --s3-bucket dibh-${awsAccountId}-us-east-1-cloudformation \
           --role-arn arn:aws:iam::$awsAccountId:role/CloudFormationDeployer \
           --parameter-overrides Environment=${{ inputs.environment }} ${{ inputs.parameterOverrides }}
+          --capabilities ${{ inputs.capabilities }}

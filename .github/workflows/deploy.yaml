@@ -5,7 +5,7 @@ on:
     inputs:
       deploy_from_branch:
         description: Branch to deploy from
-        default: develop
+        default: main
         type: string
   pull_request:
     branches:
@@ -47,5 +47,6 @@ jobs:
         with:
           module: deployment
           environment: security
+          capabilities: CAPABILITY_NAMED_IAM
           parameterOverrides: |
             AccessToken=${{ secrets.AWS_AMPLIFY_ACCESS_TOKEN }} Login=${{ vars.IDC_LOGIN_URL }} CloudTrailAuditLogs=${{ vars.CLOUDTRAIL_AUDIT_LOGS }} CustomAmplifyDomain=${{ vars.UI_DOMAIN }} TeamAdminGroup=${{ vars.TEAM_ADMIN_GROUP }} TeamAuditGroup=${{ vars.TEAM_AUDITOR_GROUP }}
