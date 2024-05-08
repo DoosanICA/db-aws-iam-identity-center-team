@@ -1,0 +1,36 @@
+name: 'deploy-sam'
+description: 'Deploy using SAM'
+inputs:
+  environment:
+    description: Environment
+    type: string
+    required: true 
+    default: dev
+  module:
+    description: CloudFormation/SAM module to deploy
+    type: string
+    required: true
+  parameterOverrides:
+    description: Parameter overrides
+    type: string
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - name: Build and Deploy
+      shell: bash
+      run: |
+        cd ${{ inputs.module }}
+        awsAccountId=$(aws sts get-caller-identity --query Account --output text)
+        echo Deploying [${{ inputs.module }}] to [${{ inputs.environment }}]
+        sam package  \
+          --config-env github \
+          --s3-bucket dibh-${awsAccountId}-us-east-1-cloudformation
+        sam deploy \
+          --config-env github \
+          --no-fail-on-empty-changeset \
+          --no-confirm-changeset \
+          --s3-bucket dibh-${awsAccountId}-us-east-1-cloudformation \
+          --role-arn arn:aws:iam::$awsAccountId:role/CloudFormationDeployer \
+          --parameter-overrides Environment=${{ inputs.environment }} ${{ inputs.parameterOverrides }}

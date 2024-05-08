@@ -1,0 +1,51 @@
+name: Deploy SAM
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_from_branch:
+        description: Branch to deploy from
+        default: develop
+        type: string
+  pull_request:
+    branches:
+      - main
+    # used in conjunction with github.event.pull_request.merged == true conditional in deloy_qa job to run when
+    # feature branch is merged to develop
+    types:
+      - closed 
+
+permissions:
+  actions: read
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: [self-hosted,linux,x64,digital,di_operations]
+    environment: dev
+    steps:
+      - name: Set Branch
+        id: set-branch
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch"]; then
+            echo "branch=main" >> $GITHUB_OUTPUT
+          else
+            echo "branch=${{ github.event.inputs.deploy_from_branch }}" >> $GITHUB_OUTPUT
+          fi
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.set-branch.outputs.branch }}
+      - name: Prepare AWS
+        uses: ./.github/actions/prepare-aws
+        with:
+          github_assumed_role_arn: ${{ secrets.AWS_ROLE_TO_ASSUME  }}
+      - uses: ./.github/actions/deploy-sam
+        name: deploy amplify app
+        with:
+          module: deployment
+          environment: security
+          paramerterOverrides: |
+            AccessToken=${{ secrets.ACCESS_TOKEN }} LOGIN=${{ vars.IDC_LOGIN_URL }} CloudTrailAuditLogs=${{ secrets.CLOUD_TRAIL_AUDIT_LOGS }} CustomAmplifyDomain=${{ secrets.CUSTOM_AMPLIFY_DOMAIN }} CloudTrailAuditLogs=${{ vars.CLOUDTRAIL_AUDIT_LOGS }} TeamAdminGroup=${{ vars.TEAM_ADMIN_GROUP }} TeamAuditGroup=${{ vars.TEAM_AUDITOR_GROUP }} CustomAmplifyDomain=${{ vars.UI_DOMAIN }}

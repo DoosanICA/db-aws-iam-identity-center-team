@@ -1,0 +1,21 @@
+version=0.1
+
+[default.global.parameters]
+stack_name =  "TEAM-IDC-APP"
+s3_prefix = "db-aws-iam-identity-center-team"
+tags = "doosan:repo=\"https://github.com/DoosanICA/db-aws-organizations\" doosan:owner=\"DI_SECURITY\""
+
+profile = "security"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+fail_on_empty_changeset = false
+s3_bucket = "dibh-196522590087-us-east-1-cloudformation"
+template_file = "template.yaml"
+parameter_overrides = "Environment=security"
+output_template_file="template-packaged.yaml"
+role_arn="arn:aws:iam::196522590087:role/CloudFormationDeployer"
+on_failure = "DELETE"
+
+[default.deploy.parameters]
+template_file = "template-packaged.yaml"

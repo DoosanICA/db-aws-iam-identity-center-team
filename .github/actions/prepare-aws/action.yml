@@ -1,0 +1,65 @@
+name: prepare-aws
+description: Prepare AWS environment
+inputs:
+  github_assumed_role_arn:
+    description: AWS Role assumed by GitHub
+    type: string
+    required: true
+  github_role_session_name:
+    description: Session name for the AWS role
+    type: string
+    required: true
+    default: DI_OPERATIONS_GITHUB
+  github_aws_region:
+    description: AWS Region
+    type: string
+    required: true
+    default: us-east-1
+  cfn_lint_install:
+    description: Install CFN-LINT
+    type: boolean
+    require: true
+    default: false
+
+runs:
+  using: composite
+  steps:
+    - name: Validate AWS CLI
+      id: version-aws-cli
+      shell: bash
+      run: |
+        aws --version
+    - name: Setup AWS Credentials for environment
+      id: login-aws
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ inputs.github_assumed_role_arn }}
+        role-session-name: ${{ inputs.github_role_session_name }}
+        aws-region: ${{ inputs.github_aws_region }}
+    - name: Display
+      id: validate-aws-credentials
+      shell: bash
+      run: |
+        aws sts get-caller-identity  
+
+    - name: Setup SAM
+      id: setup-sam
+      uses: aws-actions/setup-sam@v2
+      with:
+        use-installer: true
+    - name: Validate SAM
+      id: version-sam
+      shell: bash
+      run: |
+        sam --version
+
+    - name: Setup cfn-lint
+      if: inputs.cfn_lint_install
+      id: setup-cfn-lint
+      uses: scottbrenner/cfn-lint-action@v2
+    - name: Validate cfn-lint
+      if: inputs.cfn_lint_install
+      id: version-cfn-lint
+      shell: bash
+      run: |
+        cfn-lint --version

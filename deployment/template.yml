@@ -1,6 +1,9 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Temporary Elevated Access Management (TEAM) Application stack
 Parameters:
+  AccessToken:
+    Type: String
+    Description: GitHub Access Token
   Login:
     Type: String
     Description: IAM IDC Login URL
@@ -8,20 +11,13 @@ Parameters:
     Type: "String"
     AllowedPattern: "(read_write|read|write|none|arn.*)"
     Description: Which events should be logged on the TEAM Application Cloudtrail Lake EventDataStore.  Acceptable values are "read","write","read_write", and "none".  You may also enter the arn of an existing Cloudtrail Lake EDS.
-  teamAdminGroup:
+  TeamAdminGroup:
     Type: String
     Description: TEAM application Admin group
-  teamAuditGroup:
+  TeamAuditGroup:
     Type: String
     Description: TEAM application Auditor group
-  tags:
-    Type: String
-    Description: TEAM application tags
-    Default: ""
-  teamAccount:
-    Type: String
-    Description: TEAM deployment account ID
-  customAmplifyDomain:
+  CustomAmplifyDomain:
     Type: String
     Description: Custom domain for the TEAM application
     Default: ""
@@ -38,7 +34,7 @@ Resources:
       branchName: main
       branch: !GetAtt AmplifyBranch.Arn
 
-  DeployRole:
+  DeployPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties: 
       Description: Deploy resources onwed for Amplify
@@ -76,12 +72,13 @@ Resources:
       RoleName: AmplifyDeployerRole
       ManagedPolicyArns:
         - "arn:aws:iam::aws:policy/AdministratorAccess" 
-        - !Ref DeployRole
+        - !Ref DeployPolicy
 
   AmplifyApp:
     Type: "AWS::Amplify::App"
     Properties:
       Name: TEAM-IDC-APP
+      AccessToken: !Ref AccessToken
       Repository: https://github.com/DoosanICA/db-aws-iam-identity-center-team
       Description: Temporary Elevated Access Management Application
       CustomRules:
@@ -144,20 +141,18 @@ Resources:
         - Name: SSO_LOGIN
           Value: !Ref Login
         - Name: TEAM_ACCOUNT
-          Value: !Ref teamAccount
+          Value: !Sub ${AWS::AccountId}
         - Name: CLOUDTRAIL_AUDIT_LOGS
           Value: !If
             - IsEmptyCloudTrailAuditLogs
             - "read_write"
             - !Ref CloudTrailAuditLogs
         - Name: TEAM_ADMIN_GROUP
-          Value: !Ref teamAdminGroup
+          Value: !Ref TeamAdminGroup
         - Name: TEAM_AUDITOR_GROUP
-          Value: !Ref teamAuditGroup
-        - Name: TAGS
-          Value: !Ref tags
+          Value: !Ref TeamAuditGroup
         - Name: AMPLIFY_CUSTOM_DOMAIN
-          Value: !Ref customAmplifyDomain
+          Value: !Ref CustomAmplifyDomain
         - Name: _CUSTOM_IMAGE
           Value: amplify:al2
       Tags:
