@@ -38,5 +38,5 @@ runs:
           --no-confirm-changeset \
           --s3-bucket dibh-${awsAccountId}-us-east-1-cloudformation \
           --role-arn arn:aws:iam::$awsAccountId:role/CloudFormationDeployer \
-          --parameter-overrides Environment=${{ inputs.environment }} ${{ inputs.parameterOverrides }}
+          --parameter-overrides Environment=${{ inputs.environment }} ${{ inputs.parameterOverrides }} \
           --capabilities ${{ inputs.capabilities }}
