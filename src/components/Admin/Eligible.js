@@ -74,7 +74,7 @@ const COLUMN_DEFINITIONS = [
     sortingField: "accounts",
     header: "Accounts",
     cell: (item) => (
-      <>{item.accounts.length > 0 ?  <TextContent>
+      <>{item.accounts && item.accounts.length > 0 ?  <TextContent>
         <ul>
           {item.accounts.map(({name}) => (
             <li>{name}</li>
@@ -89,7 +89,7 @@ const COLUMN_DEFINITIONS = [
     sortingField: "ous",
     header: "OUs",
     cell: (item) => (
-      <>{item.ous.length > 0 ?  <TextContent>
+      <>{item.ous && item.ous.length > 0 ?  <TextContent>
         <ul>
           {item.ous.map(({name}) => (
             <li>{name}</li>
