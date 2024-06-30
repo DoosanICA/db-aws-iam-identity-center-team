@@ -147,7 +147,7 @@ const start_query = async (event) => {
     const response = await client.send(command);
     return response.QueryId;
   } catch (err) {
-    console.log("Error", err);
+    console.log("CloudTrail Query Error", err);
   }
 };
 
@@ -155,7 +155,8 @@ export const handler = async (event) => {
   let data = event["Records"].pop()
   data = data["dynamodb"]["NewImage"]
   const id = data["id"]["S"]
-  console.log("Event", data);
+  console.log("StartQuery Event", data);
+  console.log("StartQuery Event json", JSON.stringify(data));
   const queryId = await start_query(data);
   let status = await get_query_status(queryId);
   while (status) {
