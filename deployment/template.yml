@@ -129,7 +129,7 @@ Resources:
       Tags:
         - Key: Name
           Value: TEAM
-      IAMServiceRole: !GetAtt AmplifyRole.Arn
+      IAMServiceRole: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CloudFormationDeployer
 
   AmplifyBranch:
     Type: AWS::Amplify::Branch
