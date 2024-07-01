@@ -8,7 +8,7 @@ tags = "doosan:repo=\"https://github.com/DoosanICA/db-aws-organizations\" doosan
 profile = "security"
 region = "us-east-1"
 confirm_changeset = true
-capabilities = "CAPABILITY_IAM"
+capabilities = "CAPABILITY_NAMED_IAM"
 fail_on_empty_changeset = false
 s3_bucket = "dibh-196522590087-us-east-1-cloudformation"
 template_file = "template.yaml"

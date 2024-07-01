@@ -23,10 +23,10 @@ else
   export AWS_PROFILE=$TEAM_ACCOUNT_PROFILE
 fi
 
-git remote remove origin
-git remote add origin codecommit::$REGION://team-idc-app
-git remote add team https://github.com/aws-samples/iam-identity-center-team.git
-git pull team main
+# git remote remove origin
+# git remote add origin codecommit::$REGION://team-idc-app
+# git remote add team https://github.com/aws-samples/iam-identity-center-team.git
+# git pull team main
 
 if [[ ! -z "$TAGS" ]]; then
   if [[ ! -z "$UI_DOMAIN" ]]; then
@@ -81,5 +81,5 @@ else
   fi
 fi
 
-git push origin main
-git remote remove team
+# git push origin main
+# git remote remove team
