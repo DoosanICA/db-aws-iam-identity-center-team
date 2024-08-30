@@ -55,33 +55,6 @@ Resources:
       TopicArn: !FindInMap [Settings, TeamNotificationsTopic, arn]
       Endpoint: !GetAtt RequestRouterSqsQueue.Arn
 
-  # SnsTopicPolicy:
-  #   Type: AWS::SNS::TopicPolicy
-  #   Properties:
-  #     PolicyDocument:
-  #       Version: '2012-10-17'
-  #       Statement:
-  #         - Effect: Allow
-  #           Principal:
-  #             Service: sns.amazonaws.com
-  #           Action:
-  #             - sns:Publish
-  #           Resource: '*-team-access-requests'
-  #           Condition:
-  #             ArnEquals:
-  #               aws:SourceArn: !Sub
-  #                 - arn:${AWS::Region}:lambda:${AWS::Region}:${AWS::AccountId}:function:${FunctionName}
-  #                 - FunctionName: !FindInMap [Settings, RoutingFunction, name]
-  #     Topics:
-  #       - !Ref DIOpsSnsTopic
-  #       - !Ref FixmeSnsTopic
-  #       - !Ref DMIQSnsTopic
-  #       - !Ref IotPlatform1SnsTopic
-  #       - !Ref IotPlatform2SnsTopic
-  #       - !Ref DBOSnsTopic
-  #       - !Ref DealerMobileAppsSnsTopic
-  #       - !Ref ATGSnsTopic
-
   DIOpsSnsTopic:
     Type: AWS::SNS::Topic
     Properties:
