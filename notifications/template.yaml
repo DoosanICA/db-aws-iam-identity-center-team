@@ -1,0 +1,234 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Notifications for TEAM Requests
+
+Mappings:
+  Settings:
+    TopicSuffix:
+      value: team-access-requests
+    TeamNotificationsTopic:
+      arn: arn:aws:sns:us-east-1:196522590087:TeamNotifications-main
+    RoutingFunction:
+      name: elevated-access-request-router
+  TeamSpecific:
+    DIOps:
+      ChannelEmail: 815d6a88.Doosan.onmicrosoft.com@amer.teams.ms # DI Operations - TEAM Access Requests
+
+    
+Resources:
+
+  RequestRouterSqsQueue:
+    Type: AWS::SQS::Queue
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      QueueName: !Sub
+        - request-router-${TopicSuffix}
+        - TopicSuffix: !FindInMap [Settings, TopicSuffix, value]
+      SqsManagedSseEnabled: true
+      MessageRetentionPeriod: 28800 # 8 hours
+      ReceiveMessageWaitTimeSeconds: 20
+  
+  RouterQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref RequestRouterSqsQueue
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: sns.amazonaws.com
+            Action:
+              - sqs:SendMessage
+              - sqs:SendMessageBatch
+            Resource: !GetAtt RequestRouterSqsQueue.Arn
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !FindInMap [Settings, TeamNotificationsTopic, arn]
+
+  NotificationSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Protocol: sqs
+      TopicArn: !FindInMap [Settings, TeamNotificationsTopic, arn]
+      Endpoint: !GetAtt RequestRouterSqsQueue.Arn
+
+  # SnsTopicPolicy:
+  #   Type: AWS::SNS::TopicPolicy
+  #   Properties:
+  #     PolicyDocument:
+  #       Version: '2012-10-17'
+  #       Statement:
+  #         - Effect: Allow
+  #           Principal:
+  #             Service: sns.amazonaws.com
+  #           Action:
+  #             - sns:Publish
+  #           Resource: '*-team-access-requests'
+  #           Condition:
+  #             ArnEquals:
+  #               aws:SourceArn: !Sub
+  #                 - arn:${AWS::Region}:lambda:${AWS::Region}:${AWS::AccountId}:function:${FunctionName}
+  #                 - FunctionName: !FindInMap [Settings, RoutingFunction, name]
+  #     Topics:
+  #       - !Ref DIOpsSnsTopic
+  #       - !Ref FixmeSnsTopic
+  #       - !Ref DMIQSnsTopic
+  #       - !Ref IotPlatform1SnsTopic
+  #       - !Ref IotPlatform2SnsTopic
+  #       - !Ref DBOSnsTopic
+  #       - !Ref DealerMobileAppsSnsTopic
+  #       - !Ref ATGSnsTopic
+
+  DIOpsSnsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: DI Ops TEAM Access Requests
+      TopicName: !Sub 
+        - di_operations-${TopicSuffix}
+        - TopicSuffix: !FindInMap [Settings, TopicSuffix, value]
+      Subscription:
+        - Endpoint: !FindInMap [TeamSpecific, DIOps, ChannelEmail]
+          Protocol: EMAIL
+
+  FixmeSnsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: FIXME TEAM Access Requests
+      TopicName: !Sub
+        - fixme-${TopicSuffix}
+        - TopicSuffix: !FindInMap [Settings, TopicSuffix, value]
+  
+  DMIQSnsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: DMIQ TEAM Access Requests
+      TopicName: !Sub
+        - dmiq-${TopicSuffix}
+        - TopicSuffix: !FindInMap [Settings, TopicSuffix, value]
+  
+  IotPlatform1SnsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: IoT Platform 1 TEAM Access Requests
+      TopicName: !Sub
+        - iotplatform1-${TopicSuffix}
+        - TopicSuffix: !FindInMap [Settings, TopicSuffix, value]
+  
+  IotPlatform2SnsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: IoT Platform 2 TEAM Access Requests
+      TopicName: !Sub
+        - iot_platform_2-${TopicSuffix}
+        - TopicSuffix: !FindInMap [Settings, TopicSuffix, value]
+  
+  DBOSnsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: DBO TEAM Access Requests
+      TopicName: !Sub
+        - dbo-${TopicSuffix}
+        - TopicSuffix: !FindInMap [Settings, TopicSuffix, value]
+  
+  DealerMobileAppsSnsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: Dealer Mobile Apps TEAM Access Requests
+      TopicName: !Sub
+        - dapps-${TopicSuffix}
+        - TopicSuffix: !FindInMap [Settings, TopicSuffix, value]
+  
+  ATGSnsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: ATG TEAM Access Requests
+      TopicName: !Sub
+        - atg-${TopicSuffix}
+        - TopicSuffix: !FindInMap [Settings, TopicSuffix, value]
+
+  PublishToTeamTopics:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - sns:Publish
+            Resource:
+              - !Ref DIOpsSnsTopic
+              - !Ref FixmeSnsTopic
+              - !Ref DMIQSnsTopic
+              - !Ref IotPlatform1SnsTopic
+              - !Ref IotPlatform2SnsTopic
+              - !Ref DBOSnsTopic
+              - !Ref DealerMobileAppsSnsTopic
+              - !Ref ATGSnsTopic
+
+# Lambda function that checks the incoming message from the router Queue
+# looking at the "role" in the reuquest, it selects the correct topic from above
+# to send the notification. The role name and the topics are prefixed with the team tag,
+# i.e. DI_OPERATIONS-Admin (role) and di_operations-team-access-requests (topic)
+
+  RequestRouterLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Architectures:
+        - arm64
+      Handler: index.handler
+      Runtime: nodejs20.x
+      Description: Lambda to route TEAM access requests to the correct SNS topic based on the role
+      FunctionName: !FindInMap [Settings, RoutingFunction, name]
+      Environment:
+        Variables:
+          TopicSuffix: !FindInMap [Settings, TopicSuffix, value]
+          Topics: !Join 
+            - ','
+            - - !Ref DIOpsSnsTopic
+              - !Ref FixmeSnsTopic
+              - !Ref DMIQSnsTopic
+              - !Ref IotPlatform1SnsTopic
+              - !Ref IotPlatform2SnsTopic
+              - !Ref DBOSnsTopic
+              - !Ref DealerMobileAppsSnsTopic
+              - !Ref ATGSnsTopic
+      Events:
+        MessageToRouterTopic:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt RequestRouterSqsQueue.Arn
+            Enabled: true
+      InlineCode: |
+        const { SNSClient, PublishCommand } = require('@aws-sdk/client-sns');
+        
+        exports.handler = async (event) => {
+          const sns = new SNSClient({ region: process.env.AWS_REGION });
+          const topics = process.env.Topics.split(',');
+
+          for (const record of event.Records) {
+            const body = JSON.parse(record.body);
+            const message = JSON.parse(body.Message);
+            console.log(message)
+            const role = message.role;
+            const team = role.split('-')[0];
+            const topic = topics.find(topic => topic.split(':').pop() === `${team.toLowerCase()}-${process.env.TopicSuffix}`);
+            if (topic) {
+              console.log(`Sending message to topic: ${topic}`);
+              const input = {
+                TopicArn: topic,
+                Subject: body.Subject,
+                Message: body.Message,
+              };
+              const command = new PublishCommand(input);
+              await sns.send(command);
+            } else {
+              console.error(`topic not found: ${team.toLowerCase()}-${process.env.TopicSuffix}`);
+            }
+          }
+        };
+      Policies:
+        - !Ref PublishToTeamTopics
+      PropagateTags: true
