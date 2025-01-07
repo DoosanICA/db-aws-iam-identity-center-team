@@ -21,9 +21,21 @@ Parameters:
     Type: String
     Description: Custom domain for the TEAM application
     Default: ""
+  customRepository:
+    Type: String
+    Description: Use a custom repository for the TEAM application?
+    AllowedValues:
+      - 'Yes'
+      - 'No'
+    Default: 'No'
+  customRepositorySecretName:
+    Type: String
+    Description: Name of the secret in AWS Secrets Manager
+    Default: ''
 
 Conditions:
   IsEmptyCloudTrailAuditLogs: !Equals [!Ref CloudTrailAuditLogs, ""]
+  UseExternalRepo: !Equals [!Ref customRepository, 'Yes']
 
 Resources:
   TriggerAmplifyBuild:
@@ -78,8 +90,16 @@ Resources:
     Type: "AWS::Amplify::App"
     Properties:
       Name: TEAM-IDC-APP
-      AccessToken: !Ref AccessToken
-      Repository: https://github.com/DoosanICA/db-aws-iam-identity-center-team
+      Repository: !If
+        - UseExternalRepo
+        - !Sub >-
+          {{resolve:secretsmanager:${customRepositorySecretName}:SecretString:url}}
+        - !Sub https://github.com/DoosanICA/db-aws-iam-identity-center-team
+      AccessToken: !If
+        - UseExternalRepo
+        - !Sub >-
+          {{resolve:secretsmanager:${customRepositorySecretName}:SecretString:AccessToken}}
+        - !!Ref AccessToken
       Description: Temporary Elevated Access Management Application
       CustomRules:
         - Source: /<*>
@@ -168,6 +188,8 @@ Resources:
       Runtime: python3.9
       Role: !GetAtt AmplifyLambdaRole.Arn
       Timeout: 120
+      Architectures:
+        - arm64
       Code:
         ZipFile: |
           import json

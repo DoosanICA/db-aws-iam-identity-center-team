@@ -11,14 +11,34 @@ from dateutil import parser, tz
 
 session = boto3.Session()
 
+def parse_arn(arn):
+    # http://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
+    elements = arn.split(':')
+    result = {'arn': elements[0],
+            'partition': elements[1],
+            'service': elements[2],
+            'region': elements[3],
+            'account': elements[4]
+           }
+    if len(elements) == 7:
+        result['resourcetype'], result['resource'] = elements[5:]
+    elif '/' not in elements[5]:
+        result['resource'] = elements[5]
+        result['resourcetype'] = None
+    else:
+        result['resourcetype'], result['resource'] = elements[5].split('/')
+    return result
+
 
 def send_ses_notification(
     source_email, source_arn, subject, message_html, to_addresses, cc_addresses
 ):
-    ses_client = session.client("ses")
     try:
         # Providing a source arn enables using an SES identity in another account
         if source_arn:
+            ses_region = parse_arn(source_arn)["region"]
+            ses_client = session.client("ses", region_name=ses_region)
+            
             ses_client.send_email(
                 Source=source_email,
                 SourceArn=source_arn,
@@ -29,6 +49,8 @@ def send_ses_notification(
                 },
             )
         else:
+            ses_client = session.client("ses"
+                                        )
             ses_client.send_email(
                 Source=source_email,
                 Destination={"ToAddresses": to_addresses, "CcAddresses": cc_addresses},
@@ -259,9 +281,9 @@ def lambda_handler(event: dict, context):
             email_message_html = f'<html><body><p>Your AWS access session has started. Open <a href="{login_url}">TEAM</a> to manage AWS access requests.</p><p><b>Account:</b> {account}<br /><b>Role:</b> {role}<br /><b>Start Time:</b> {request_start_time}<br /><b>Duration:</b> {duration_hours} hours<br /><b>Justification:</b> {justification}<br /><b>Ticket Number:</b> {ticket}<br /></p></body></html>'
         case "approved":
             # Notify requester request approved
-            slack_recipients = [requester]
+            slack_recipients = approvers + [requester]
             slack_message = (
-                f"Your AWS access request was approved by {event['approver']}."
+                f"AWS access request was approved by {event['approver']}."
             )
             email_to_addresses = [requester]
             email_cc_addresses = approvers
@@ -269,8 +291,8 @@ def lambda_handler(event: dict, context):
             email_message_html = f'<html><body><p>Your AWS access request has been approved by {event["approver"]}. You will receive a notification when the session has started. Open <a href="{login_url}">TEAM</a> to manage AWS access requests.</p><p><b>Account:</b> {account}<br /><b>Role:</b> {role}<br /><b>Start Time:</b> {request_start_time}<br /><b>Duration:</b> {duration_hours} hours<br /><b>Justification:</b> {justification}<br /><b>Ticket Number:</b> {ticket}<br /></p></body></html>'
         case "rejected":
             # Notify requester request rejected
-            slack_recipients = [requester]
-            slack_message = "Your AWS access request was rejected."
+            slack_recipients = approvers + [requester]
+            slack_message = "AWS access request was rejected."
             email_to_addresses = [requester]
             email_cc_addresses = approvers
             subject = f"AWS access request rejected for {account} - TEAM"

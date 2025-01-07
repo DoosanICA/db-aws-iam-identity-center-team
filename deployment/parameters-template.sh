@@ -20,7 +20,10 @@ TEAM_ACCOUNT_PROFILE=team_account_profile
 TEAM_ADMIN_GROUP="team_admin_group_name"
 TEAM_AUDITOR_GROUP="team_auditor_group_name"
 TAGS="application=iam-identity-center-team environment=security"
-CLOUDTRAIL_AUDIT_LOGS=read_write
+CLOUDTRAIL_AUDIT_LOGS=arn:aws:cloudtrail:us-east-1:363445155762:eventdatastore/9658b120-398c-4141-b5a2-251f8db3002a
+SECRET_NAME=
 
 # Uncomment the next line only if you have a custom domain
 # UI_DOMAIN=portal.teamtest.online
+
+

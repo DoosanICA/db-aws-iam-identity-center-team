@@ -38,6 +38,13 @@ export type AmplifyDependentResourcesAttributes = {
     }
   },
   "function": {
+    "teamGetPermissionSets": {
+      "Arn": "string",
+      "LambdaExecutionRole": "string",
+      "LambdaExecutionRoleArn": "string",
+      "Name": "string",
+      "Region": "string"
+    },
     "teamListGroups": {
       "Arn": "string",
       "LambdaExecutionRole": "string",
@@ -46,6 +53,13 @@ export type AmplifyDependentResourcesAttributes = {
       "Region": "string"
     },
     "teamNotifications": {
+      "Arn": "string",
+      "LambdaExecutionRole": "string",
+      "LambdaExecutionRoleArn": "string",
+      "Name": "string",
+      "Region": "string"
+    },
+    "teamPublishOUs": {
       "Arn": "string",
       "LambdaExecutionRole": "string",
       "LambdaExecutionRoleArn": "string",
@@ -70,6 +84,13 @@ export type AmplifyDependentResourcesAttributes = {
       "Arn": "string"
     },
     "teamgetAccounts": {
+      "Arn": "string",
+      "LambdaExecutionRole": "string",
+      "LambdaExecutionRoleArn": "string",
+      "Name": "string",
+      "Region": "string"
+    },
+    "teamgetEntitlement": {
       "Arn": "string",
       "LambdaExecutionRole": "string",
       "LambdaExecutionRoleArn": "string",
@@ -125,7 +146,7 @@ export type AmplifyDependentResourcesAttributes = {
       "Name": "string",
       "Region": "string"
     },
-    "teamgetUserEntitlement": {
+    "teamgetUserPolicy": {
       "Arn": "string",
       "LambdaExecutionRole": "string",
       "LambdaExecutionRoleArn": "string",
