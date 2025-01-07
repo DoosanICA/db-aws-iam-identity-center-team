@@ -94,12 +94,12 @@ Resources:
         - UseExternalRepo
         - !Sub >-
           {{resolve:secretsmanager:${customRepositorySecretName}:SecretString:url}}
-        - !Sub https://github.com/DoosanICA/db-aws-iam-identity-center-team
+        - https://github.com/DoosanICA/db-aws-iam-identity-center-team
       AccessToken: !If
         - UseExternalRepo
         - !Sub >-
           {{resolve:secretsmanager:${customRepositorySecretName}:SecretString:AccessToken}}
-        - !!Ref AccessToken
+        - !Ref AccessToken
       Description: Temporary Elevated Access Management Application
       CustomRules:
         - Source: /<*>
